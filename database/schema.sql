@@ -1,0 +1,6 @@
+CREATE TABLE IF NOT EXISTS demanda (
+    id SERIAL PRIMARY KEY,
+    titulo TEXT,
+    status INTEGER,
+    data_elaboracao TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
