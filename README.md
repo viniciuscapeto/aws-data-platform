@@ -1,3 +1,400 @@
+# 🚀 AWS Data Platform
+
+Projeto de estudo com foco em experiência prática em Cloud Computing, utilizando **AWS**, **Python**, **FastAPI** e **PostgreSQL**.
+
+O objetivo é construir uma plataforma simples de dados com arquitetura parecida com ambientes reais, integrando pipeline de ingestão, API REST e banco de dados em nuvem usando **Amazon RDS**.
+
+---
+
+## 🧠 Objetivo do projeto
+
+Este projeto foi criado para praticar conceitos de cloud e backend em um cenário próximo ao mercado de trabalho.
+
+A aplicação permite:
+
+- Criar um banco PostgreSQL na AWS usando Amazon RDS
+- Conectar uma aplicação Python ao banco em nuvem
+- Inserir dados automaticamente por meio de um pipeline
+- Expor os dados por meio de uma API REST com FastAPI
+- Preparar a base para futuras integrações com S3, IA, deploy e AWS DMS
+
+---
+
+## 🏗️ Arquitetura
+
+```text
+Usuário
+  ↓
+API FastAPI
+  ↓
+Amazon RDS PostgreSQL
+  ↑
+Pipeline Python
+```
+
+Fluxo principal:
+
+```text
+pipeline/collector.py → insere dados → AWS RDS PostgreSQL
+api/main.py → expõe endpoint → consulta dados no RDS
+```
+
+---
+
+## 🛠️ Tecnologias utilizadas
+
+- Python
+- FastAPI
+- Uvicorn
+- PostgreSQL
+- Amazon RDS
+- psycopg2
+- python-dotenv
+- Git/GitHub
+
+---
+
+## ☁️ Serviços AWS utilizados
+
+### Amazon RDS
+
+Utilizado para hospedar um banco de dados PostgreSQL gerenciado na AWS.
+
+Configurações utilizadas no projeto:
+
+- Engine: PostgreSQL
+- Tipo: RDS
+- Acesso público habilitado para testes
+- Porta: 5432
+- Security Group configurado para permitir conexão externa
+- Região: sa-east-1
+
+---
+
+## 📁 Estrutura do projeto
+
+```text
+aws_data_platform/
+│
+├── api/
+│   ├── __init__.py
+│   ├── main.py
+│   │
+│   ├── routes/
+│   │   ├── __init__.py
+│   │   ├── chat.py
+│   │   └── upload.py
+│   │
+│   └── services/
+│       ├── __init__.py
+│       ├── db_service.py
+│       ├── ia_service.py
+│       └── storage_service.py
+│
+├── pipeline/
+│   └── collector.py
+│
+├── database/
+│   └── schema.sql
+│
+├── config/
+│   └── settings.py
+│
+├── infra/
+│   └── aws_setup.md
+│
+├── requirements.txt
+├── README.md
+├── .gitignore
+└── .env
+```
+
+---
+
+## ⚙️ Configuração do ambiente
+
+### 1. Criar ambiente virtual
+
+```bash
+python -m venv venv
+```
+
+### 2. Ativar o ambiente virtual
+
+No Windows:
+
+```bash
+venv\Scripts\activate
+```
+
+### 3. Instalar dependências
+
+```bash
+pip install -r requirements.txt
+```
+
+---
+
+## 📦 Dependências principais
+
+Exemplo de dependências usadas no projeto:
+
+```txt
+fastapi
+uvicorn
+psycopg2-binary
+python-dotenv
+boto3
+SQLAlchemy
+```
+
+---
+
+## 🔐 Configuração do arquivo `.env`
+
+Crie um arquivo `.env` na raiz do projeto com as informações do banco.
+
+Exemplo:
+
+```env
+DB_HOST=seu-endpoint-rds.amazonaws.com
+DB_NAME=postgres
+DB_USER=cloudadmin
+DB_PASSWORD=sua_senha
+DB_PORT=5432
+
+AWS_REGION=sa-east-1
+S3_BUCKET=meu-bucket-teste
+```
+
+> Atenção: o arquivo `.env` não deve ser enviado para o GitHub.
+
+---
+
+## 🚫 Arquivos ignorados pelo Git
+
+O projeto deve ter um arquivo `.gitignore` com o seguinte conteúdo:
+
+```gitignore
+venv/
+__pycache__/
+.env
+*.pyc
+```
+
+Isso evita enviar arquivos sensíveis ou desnecessários para o repositório.
+
+---
+
+## 🗄️ Banco de dados
+
+O banco de dados utilizado é PostgreSQL hospedado no **Amazon RDS**.
+
+Tabela inicial:
+
+```sql
+CREATE TABLE IF NOT EXISTS dados_coletados (
+    id SERIAL PRIMARY KEY,
+    valor INT,
+    data TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+```
+
+Essa tabela armazena valores gerados pelo pipeline Python.
+
+---
+
+## 🔌 Serviço de conexão com o banco
+
+Arquivo:
+
+```text
+api/services/db_service.py
+```
+
+Responsável por abrir conexão com o PostgreSQL e executar queries.
+
+Exemplo de uso:
+
+```python
+from api.services.db_service import execute_query
+
+dados = execute_query(
+    "SELECT id, valor, data FROM dados_coletados ORDER BY id DESC LIMIT 10;",
+    fetch=True
+)
+```
+
+---
+
+## 🔁 Pipeline de dados
+
+Arquivo:
+
+```text
+pipeline/collector.py
+```
+
+Esse pipeline insere registros no banco PostgreSQL hospedado no Amazon RDS.
+
+Para executar:
+
+```bash
+set PYTHONPATH=.
+python pipeline/collector.py
+```
+
+Exemplo de saída esperada:
+
+```text
+Dado inserido com sucesso: 61
+```
+
+---
+
+## 🌐 API FastAPI
+
+Arquivo principal:
+
+```text
+api/main.py
+```
+
+Para rodar a API localmente:
+
+```bash
+uvicorn api.main:app --reload
+```
+
+A aplicação ficará disponível em:
+
+```text
+http://127.0.0.1:8000
+```
+
+---
+
+## 📡 Endpoint disponível
+
+### Listar dados
+
+```http
+GET /dados
+```
+
+Exemplo de resposta:
+
+```json
+{
+  "dados": [
+    {
+      "id": 1,
+      "valor": 61,
+      "data": "2026-04-29T19:40:42.644307"
+    }
+  ]
+}
+```
+
+Esse endpoint consulta dados diretamente do banco PostgreSQL na AWS.
+
+---
+
+## ✅ Funcionalidades implementadas
+
+- [x] Criação de banco PostgreSQL no Amazon RDS
+- [x] Configuração de Security Group
+- [x] Conexão Python com PostgreSQL em nuvem
+- [x] Criação de tabela no banco
+- [x] Pipeline de ingestão de dados
+- [x] API REST com FastAPI
+- [x] Endpoint para consulta de dados
+- [x] Integração entre pipeline, API e banco em cloud
+- [x] Versionamento inicial com Git/GitHub
+
+---
+
+## 🚀 Próximos passos
+
+- [ ] Criar bucket no Amazon S3
+- [ ] Implementar upload de arquivos para o S3
+- [ ] Registrar arquivos enviados no banco PostgreSQL
+- [ ] Criar agendamento automático do pipeline
+- [ ] Fazer deploy da API na AWS
+- [ ] Adicionar autenticação na API
+- [ ] Adicionar logs estruturados
+- [ ] Integrar IA para consulta de dados em linguagem natural
+- [ ] Simular migração de dados com AWS DMS
+- [ ] Criar documentação técnica da arquitetura
+
+---
+
+## 🧪 Como testar o projeto
+
+### 1. Ativar o ambiente virtual
+
+```bash
+venv\Scripts\activate
+```
+
+### 2. Instalar dependências
+
+```bash
+pip install -r requirements.txt
+```
+
+### 3. Configurar `.env`
+
+Criar o arquivo `.env` com as credenciais do banco.
+
+### 4. Inserir dados pelo pipeline
+
+```bash
+set PYTHONPATH=.
+python pipeline/collector.py
+```
+
+### 5. Rodar a API
+
+```bash
+uvicorn api.main:app --reload
+```
+
+### 6. Acessar o endpoint
+
+```text
+http://127.0.0.1:8000/dados
+```
+
+---
+
+## 💡 Aprendizados
+
+Durante o desenvolvimento deste projeto foram praticados conceitos como:
+
+- Criação e configuração de banco gerenciado na AWS
+- Conexão remota com PostgreSQL
+- Liberação de acesso via Security Groups
+- Organização de projeto Python em múltiplas pastas
+- Uso de variáveis de ambiente
+- Criação de pipeline de dados
+- Desenvolvimento de API REST com FastAPI
+- Versionamento de código com Git
+- Preparação de projeto para portfólio técnico
+
+---
+
+## 📌 Possível descrição para currículo
+
+Desenvolvi uma plataforma de dados em Python integrada à AWS, utilizando FastAPI para exposição de API REST, Amazon RDS PostgreSQL para persistência em nuvem e pipeline Python para ingestão de dados. O projeto inclui configuração de ambiente cloud, conexão remota segura, versionamento com Git e estrutura preparada para evolução com S3, DMS e deploy em AWS.
+
+---
+
+## 📌 Autor
+
+Projeto desenvolvido por Vinicius Capeto como estudo prático de Cloud Computing, Backend e Engenharia de Dados utilizando AWS.
+
+
 ---
 
 ## 🧩 Git e GitHub
